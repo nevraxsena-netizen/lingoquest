@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LingoQuest — Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">🎮 LingoQuest</div>
+    <p class="tagline">Game Localization Platform</p>
+    <nav>
+      <a href="index.html"><button class="outline">Home</button></a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="section active center">
+      <div class="auth-box">
+        <div class="auth-tabs">
+          <button class="tab active" onclick="switchTab('login')">Login</button>
+          <button class="tab" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+          <h2>Welcome Back</h2>
+          <div class="form-box">
+            <label>Username</label>
+            <input type="text" id="loginUsername" placeholder="Enter username">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter password">
+            <button onclick="handleLogin()">Login</button>
+            <p id="loginMsg"></p>
+          </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" style="display:none">
+          <h2>Create Account</h2>
+          <div class="form-box">
+            <label>Username</label>
+            <input type="text" id="regUsername" placeholder="Enter username">
+            <label>Password</label>
+            <input type="password" id="regPassword" placeholder="Enter password">
+            <button onclick="handleRegister()">Register</button>
+            <p id="registerMsg"></p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API = 'http://localhost:3000/api';
+  </script>
+  <script src="js/api.js"></script>
+  <script>
+    function switchTab(tab) {
+      document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    async function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const msg = document.getElementById('loginMsg');
+
+      const { ok, data } = await login(username, password);
+      if (ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        msg.textContent = 'Login successful! Redirecting...';
+        msg.style.color = 'green';
+        setTimeout(() => {
+          window.location.href = data.user.role === 'admin' ? 'admin.html' : 'index.html';
+        }, 1000);
+      } else {
+        msg.textContent = data.error || 'Login failed.';
+        msg.style.color = 'red';
+      }
+    }
+
+    async function handleRegister() {
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+      const msg = document.getElementById('registerMsg');
+
+      const { ok, data } = await register(username, password);
+      if (ok) {
+        msg.textContent = 'Account created! Please login.';
+        msg.style.color = 'green';
+        setTimeout(() => switchTab('login'), 1500);
+      } else {
+        msg.textContent = data.error || 'Registration failed.';
+        msg.style.color = 'red';
+      }
+    }
+  </script>
+
+</body>
+</html>

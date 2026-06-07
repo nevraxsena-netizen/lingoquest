@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LingoQuest — Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">🎮 LingoQuest</div>
+    <p class="tagline">Admin Panel</p>
+    <nav>
+      <span id="adminUser" style="color:#aaa;margin-right:12px;"></span>
+      <a href="index.html"><button class="outline">Home</button></a>
+      <button class="outline" onclick="handleLogout()">Logout</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="tab active" onclick="switchAdminTab('strings')">Strings</button>
+      <button class="tab" onclick="switchAdminTab('translations')">Translations</button>
+    </div>
+
+    <!-- Strings Tab -->
+    <section id="stringsTab" class="section active">
+      <div class="section-header">
+        <h2>Game Strings</h2>
+        <button onclick="openAddModal()">+ Add String</button>
+      </div>
+
+      <div id="stringsList"></div>
+    </section>
+
+    <!-- Translations Tab -->
+    <section id="translationsTab" class="section">
+      <h2>Pending Translations</h2>
+      <div id="translationsList"></div>
+    </section>
+
+  </main>
+
+  <!-- Add/Edit Modal -->
+  <div id="modal" class="modal" style="display:none">
+    <div class="modal-box">
+      <h3 id="modalTitle">Add String</h3>
+      <div class="form-box">
+        <label>Key</label>
+        <input type="text" id="modalKey" placeholder="e.g. ui.button.start">
+        <label>Source Text</label>
+        <input type="text" id="modalSource" placeholder="Original text in English">
+        <label>Context (optional)</label>
+        <input type="text" id="modalContext" placeholder="e.g. Main menu start button">
+        <div class="modal-actions">
+          <button onclick="handleSaveString()">Save</button>
+          <button class="outline" onclick="closeModal()">Cancel</button>
+        </div>
+        <p id="modalMsg"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const API = 'http://localhost:3000/api';
+</script>
+<script src="js/api.js"></script>
+  <script>
+    let token = localStorage.getItem('token') || '';
+    let editingId = null;
+
+    // Auth check
+    window.onload = () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!token || user.role !== 'admin') {
+        alert('Access denied. Please login as admin.');
+        window.location.href = 'login.html';
+        return;
+      }
+      document.getElementById('adminUser').textContent = `👤 ${user.username}`;
+      loadStrings();
+    };
+
+    function handleLogout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    function switchAdminTab(tab) {
+      document.getElementById('stringsTab').classList.toggle('active', tab === 'strings');
+      document.getElementById('translationsTab').classList.toggle('active', tab === 'translations');
+      document.querySelectorAll('.admin-tabs .tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      if (tab === 'translations') loadTranslations();
+    }
+
+    // --- STRINGS ---
+    async function loadStrings() {
+      const { data } = await getStrings();
+      const container = document.getElementById('stringsList');
+      if (!data.length) {
+        container.innerHTML = '<p>No strings found.</p>';
+        return;
+      }
+      container.innerHTML = data.map(s => `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>${s.key}</h3>
+              <p>${s.source_text}</p>
+              ${s.context ? `<small>Context: ${s.context}</small>` : ''}
+            </div>
+            <div class="card-actions">
+              <button onclick="openEditModal(${s.id}, '${escape(s.key)}', '${escape(s.source_text)}', '${escape(s.context || '')}')">Edit</button>
+              <button class="danger" onclick="handleDeleteString(${s.id})">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAddModal() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Add String';
+      document.getElementById('modalKey').value = '';
+      document.getElementById('modalSource').value = '';
+      document.getElementById('modalContext').value = '';
+      document.getElementById('modalMsg').textContent = '';
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function openEditModal(id, key, source, context) {
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Edit String';
+      document.getElementById('modalKey').value = unescape(key);
+      document.getElementById('modalSource').value = unescape(source);
+      document.getElementById('modalContext').value = unescape(context);
+      document.getElementById('modalMsg').textContent = '';
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    async function handleSaveString() {
+      const key = document.getElementById('modalKey').value.trim();
+      const source_text = document.getElementById('modalSource').value.trim();
+      const context = document.getElementById('modalContext').value.trim();
+      const msg = document.getElementById('modalMsg');
+
+      if (!key || !source_text) {
+        msg.textContent = 'Key and Source Text are required.';
+        msg.style.color = 'red';
+        return;
+      }
+
+      const payload = { key, source_text, context };
+      const { ok, data } = editingId
+        ? await updateString(token, editingId, payload)
+        : await addString(token, payload);
+
+      if (ok) {
+        closeModal();
+        loadStrings();
+      } else {
+        msg.textContent = data.error || 'Error occurred.';
+        msg.style.color = 'red';
+      }
+    }
+
+    async function handleDeleteString(id) {
+      if (!confirm('Are you sure you want to delete this string?')) return;
+      const { ok } = await deleteString(token, id);
+      if (ok) loadStrings();
+    }
+
+    // --- TRANSLATIONS ---
+    async function loadTranslations() {
+      const { data: strings } = await getStrings();
+      const container = document.getElementById('translationsList');
+      container.innerHTML = '';
+
+      for (const s of strings) {
+        const { data: translations } = await getTranslations(s.id);
+        const pending = translations.filter(t => t.status === 'pending');
+        if (!pending.length) continue;
+
+        container.innerHTML += `
+          <div class="card">
+            <h3>${s.key} — <small>${s.source_text}</small></h3>
+            ${pending.map(t => `
+              <div class="translation-row">
+                <div>
+                  <span class="lang-badge">${t.language_code.toUpperCase()}</span>
+                  <strong>${t.translated_text}</strong>
+                  <small>by ${t.username}</small>
+                </div>
+                <div class="card-actions">
+                  <button class="success" onclick="handleApprove(${t.id})">Approve</button>
+                  <button class="danger" onclick="handleReject(${t.id})">Reject</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      if (!container.innerHTML) {
+        container.innerHTML = '<p>No pending translations.</p>';
+      }
+    }
+
+    async function handleApprove(id) {
+      const { ok } = await approveTranslation(token, id);
+      if (ok) loadTranslations();
+    }
+
+    async function handleReject(id) {
+      const { ok } = await rejectTranslation(token, id);
+      if (ok) loadTranslations();
+    }
+  </script>
+
+</body>
+</html>

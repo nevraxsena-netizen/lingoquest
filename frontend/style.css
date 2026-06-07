@@ -1,0 +1,272 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f0f1a;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  background: #1a1a2e;
+  padding: 16px 40px;
+  border-bottom: 2px solid #6c63ff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #6c63ff;
+}
+
+.tagline {
+  color: #888;
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* BUTTONS */
+button {
+  background: #6c63ff;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+button:hover { background: #5a52d5; }
+
+button.outline {
+  background: transparent;
+  border: 1px solid #6c63ff;
+  color: #6c63ff;
+}
+
+button.outline:hover {
+  background: #6c63ff;
+  color: white;
+}
+
+button.danger {
+  background: #e74c3c;
+}
+
+button.danger:hover { background: #c0392b; }
+
+button.success {
+  background: #2ecc71;
+  color: #0f0f1a;
+}
+
+button.success:hover { background: #27ae60; }
+
+/* MAIN */
+main {
+  padding: 40px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* SECTIONS */
+.section { display: none; }
+.section.active { display: block; }
+.section.center { display: flex; justify-content: center; }
+
+h2 {
+  color: #6c63ff;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+}
+
+/* SEARCH */
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-box input { flex: 1; }
+
+/* FORM */
+.form-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 500px;
+}
+
+label {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: -6px;
+}
+
+input, select, textarea {
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  color: #e0e0e0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #6c63ff;
+}
+
+textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+/* CARDS */
+.card {
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+
+.card h3 {
+  color: #6c63ff;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.card p { color: #bbb; font-size: 0.9rem; }
+.card small { color: #666; font-size: 0.8rem; }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* TRANSLATION ROW */
+.translation-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #2a2a3e;
+  gap: 12px;
+}
+
+.translation-row div { display: flex; align-items: center; gap: 8px; }
+
+.lang-badge {
+  background: #6c63ff22;
+  color: #6c63ff;
+  border: 1px solid #6c63ff44;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* TABS */
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.admin-tabs .tab, .auth-tabs .tab {
+  background: transparent;
+  border: 1px solid #2a2a3e;
+  color: #aaa;
+  padding: 8px 20px;
+  border-radius: 6px;
+}
+
+.admin-tabs .tab.active, .auth-tabs .tab.active {
+  background: #6c63ff;
+  border-color: #6c63ff;
+  color: white;
+}
+
+/* AUTH BOX */
+.auth-box {
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 40px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+/* SECTION HEADER */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: #00000088;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-box {
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 460px;
+}
+
+.modal-box h3 {
+  color: #6c63ff;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* LINKS */
+a { text-decoration: none; }
