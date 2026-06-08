@@ -4,15 +4,18 @@ const app = require('../backend/server');
 let adminToken = '';
 
 beforeAll(async () => {
-  // Login as admin to get token
+  // Register admin
+  await request(app)
+    .post('/api/auth/register')
+    .send({ username: 'admintest', password: 'Admin123', role: 'admin' });
+
   const res = await request(app)
     .post('/api/auth/login')
-    .send({ username: 'admin', password: 'admin123' });
+    .send({ username: 'admintest', password: 'Admin123' });
   adminToken = res.body.token;
 });
 
 describe('Strings Routes', () => {
-
   let createdId;
 
   test('GET /api/strings — returns array', async () => {
@@ -57,5 +60,4 @@ describe('Strings Routes', () => {
 
     expect(res.statusCode).toBe(401);
   });
-
 });

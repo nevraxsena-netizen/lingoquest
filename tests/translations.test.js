@@ -6,14 +6,23 @@ let translatorToken = '';
 let translationId;
 
 beforeAll(async () => {
+  // Register users
+  await request(app)
+    .post('/api/auth/register')
+    .send({ username: 'admintest2', password: 'Admin123', role: 'admin' });
+
+  await request(app)
+    .post('/api/auth/register')
+    .send({ username: 'translatortest', password: 'Trans123' });
+
   const admin = await request(app)
     .post('/api/auth/login')
-    .send({ username: 'admin', password: 'admin123' });
+    .send({ username: 'admintest2', password: 'Admin123' });
   adminToken = admin.body.token;
 
   const translator = await request(app)
     .post('/api/auth/login')
-    .send({ username: 'translator1', password: 'translator123' });
+    .send({ username: 'translatortest', password: 'Trans123' });
   translatorToken = translator.body.token;
 });
 
@@ -55,5 +64,4 @@ describe('Translations Routes', () => {
 
     expect(res.statusCode).toBe(403);
   });
-
 });
