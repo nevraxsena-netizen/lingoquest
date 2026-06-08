@@ -33,6 +33,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await pool.query('DELETE FROM translations WHERE user_id IN (SELECT id FROM users WHERE username IN ($1, $2))', ['admintest2', 'transtest']);
   await pool.query('DELETE FROM users WHERE username IN ($1, $2)', ['admintest2', 'transtest']);
   await pool.end();
 });
