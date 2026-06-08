@@ -1,19 +1,25 @@
 const request = require('supertest');
 const app = require('../backend/server');
+const pool = require('../backend/db');
 
 let adminToken = '';
 let translatorToken = '';
 let translationId;
 
 beforeAll(async () => {
-  // Register users
-  await request(app)
-    .post('/api/auth/register')
-    .send({ username: 'admintest2', password: 'Admin123', role: 'admin' });
+  const bcrypt = require('bcryptjs');
+  const adminHash = await bcrypt.hash('Admin123', 10);
+  const transHash = await bcrypt.hash('Trans123', 10);
 
-  await request(app)
-    .post('/api/auth/register')
-    .send({ username: 'translatortest', password: 'Trans123' });
+  await pool.query('DELETE FROM users WHERE username IN ($1, $2)', ['admintest2', 'transtest']);
+  await pool.query(
+    'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)',
+    ['admintest2', adminHash, 'admin']
+  );
+  await pool.query(
+    'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)',
+    ['transtest', transHash, 'translator']
+  );
 
   const admin = await request(app)
     .post('/api/auth/login')
@@ -22,8 +28,13 @@ beforeAll(async () => {
 
   const translator = await request(app)
     .post('/api/auth/login')
-    .send({ username: 'translatortest', password: 'Trans123' });
+    .send({ username: 'transtest', password: 'Trans123' });
   translatorToken = translator.body.token;
+});
+
+afterAll(async () => {
+  await pool.query('DELETE FROM users WHERE username IN ($1, $2)', ['admintest2', 'transtest']);
+  await pool.end();
 });
 
 describe('Translations Routes', () => {

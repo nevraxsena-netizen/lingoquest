@@ -1,18 +1,28 @@
 const request = require('supertest');
 const app = require('../backend/server');
+const pool = require('../backend/db');
 
 let adminToken = '';
 
 beforeAll(async () => {
-  // Register admin
-  await request(app)
-    .post('/api/auth/register')
-    .send({ username: 'admintest', password: 'Admin123', role: 'admin' });
+  const bcrypt = require('bcryptjs');
+  const hash = await bcrypt.hash('Admin123', 10);
+  
+  await pool.query('DELETE FROM users WHERE username = $1', ['admintest']);
+  await pool.query(
+    'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)',
+    ['admintest', hash, 'admin']
+  );
 
   const res = await request(app)
     .post('/api/auth/login')
     .send({ username: 'admintest', password: 'Admin123' });
   adminToken = res.body.token;
+});
+
+afterAll(async () => {
+  await pool.query('DELETE FROM users WHERE username = $1', ['admintest']);
+  await pool.end();
 });
 
 describe('Strings Routes', () => {
