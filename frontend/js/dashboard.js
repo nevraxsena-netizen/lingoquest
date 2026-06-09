@@ -7,7 +7,7 @@ function showSection(id) {
 }
 
 async function loadStrings() {
-  const res = await fetch(`${API}/strings`);
+  const res = await fetch(`${API}/strings?sort=${currentSort}`);
   const data = await res.json();
 
   const select = document.getElementById('stringSelect');
@@ -17,17 +17,13 @@ async function loadStrings() {
       select.innerHTML += `<option value="${s.id}">[${s.key}] ${s.source_text}</option>`;
     });
   }
+
+  renderCards(data);
 }
 
-async function handleSearch() {
-  const query = document.getElementById('searchInput').value.trim();
-  const url = query
-    ? `${API}/strings/search/${encodeURIComponent(query)}`
-    : `${API}/strings`;
-
-  const res = await fetch(url);
-  const data = await res.json();
+function renderCards(data) {
   const container = document.getElementById('searchResults');
+  if (!container) return;
 
   if (!data || !data.length) {
     container.innerHTML = '<p>No results found.</p>';
@@ -41,6 +37,28 @@ async function handleSearch() {
       ${s.context ? `<small>Context: ${s.context}</small>` : ''}
     </div>
   `).join('');
+}
+
+async function handleSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+
+  let data;
+  if (query) {
+    const res = await fetch(`${API}/strings/search/${encodeURIComponent(query)}`);
+    data = await res.json();
+  } else {
+    const res = await fetch(`${API}/strings?sort=${currentSort}`);
+    data = await res.json();
+  }
+
+  renderCards(data);
+}
+
+function toggleSort() {
+  currentSort = currentSort === 'desc' ? 'asc' : 'desc';
+  const btn = document.getElementById('sortBtn');
+  btn.textContent = currentSort === 'desc' ? '↓ Newest First' : '↑ Oldest First';
+  loadStrings();
 }
 
 async function handleSubmitTranslation() {
@@ -84,5 +102,4 @@ async function handleSubmitTranslation() {
 window.onload = () => {
   token = localStorage.getItem('token') || '';
   loadStrings();
-  handleSearch();
 };
